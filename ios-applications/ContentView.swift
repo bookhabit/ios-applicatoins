@@ -7,204 +7,7 @@
 
 import SwiftUI
 
-// TodoItem 모델
-struct TodoItem: Identifiable, Codable {
-    let id: String
-    var text: String
-    var completed: Bool
-    var createdAt: Date
-    
-    init(id: String = UUID().uuidString, text: String, completed: Bool = false, createdAt: Date = Date()) {
-        self.id = id
-        self.text = text
-        self.completed = completed
-        self.createdAt = createdAt
-    }
-}
 
-// TodoView
-struct TodoView: View {
-    @State private var todos: [TodoItem] = []
-    @State private var newTodoText: String = ""
-    @State private var filter: FilterType = .all
-    
-    enum FilterType: String, CaseIterable {
-        case all = "전체"
-        case active = "진행중"
-        case completed = "완료"
-    }
-    
-    var body: some View {
-        NavigationView {
-            VStack {
-                // 헤더
-                VStack(spacing: 10) {
-                    Text("To-Do 리스트")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("할 일을 관리하고 완료 상태를 추적하는 앱입니다.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding()
-                
-                // 입력 필드
-                HStack {
-                    TextField("새로운 할 일을 입력하세요...", text: $newTodoText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onSubmit {
-                            addTodo()
-                        }
-                    
-                    Button("추가") {
-                        addTodo()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(newTodoText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-                .padding(.horizontal)
-                
-                // 필터 버튼
-                HStack(spacing: 8) {
-                    ForEach(FilterType.allCases, id: \.self) { filterType in
-                        Button(action: {
-                            filter = filterType
-                        }) {
-                            Text("\(filterType.rawValue) (\(getCount(for: filterType)))")
-                                .font(.caption)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(filter == filterType ? Color.blue : Color.gray.opacity(0.2))
-                                .foregroundColor(filter == filterType ? .white : .primary)
-                                .cornerRadius(20)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-                
-                // 할 일 목록
-                List {
-                    ForEach(filteredTodos) { todo in
-                        TodoRowView(todo: todo) { updatedTodo in
-                            if let index = todos.firstIndex(where: { $0.id == updatedTodo.id }) {
-                                todos[index] = updatedTodo
-                                saveTodos()
-                            }
-                        } onDelete: {
-                            deleteTodo(todo)
-                        }
-                    }
-                }
-                .listStyle(PlainListStyle())
-                
-                // 완료된 할 일 삭제 버튼
-                if todos.contains(where: { $0.completed }) {
-                    Button("완료된 할 일 모두 삭제") {
-                        clearCompleted()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-                    .padding()
-                }
-            }
-            .navigationTitle("할 일 관리")
-        }
-        .onAppear {
-            loadTodos()
-        }
-    }
-    
-    private var filteredTodos: [TodoItem] {
-        switch filter {
-        case .all:
-            return todos
-        case .active:
-            return todos.filter { !$0.completed }
-        case .completed:
-            return todos.filter { $0.completed }
-        }
-    }
-    
-    private func getCount(for filterType: FilterType) -> Int {
-        switch filterType {
-        case .all:
-            return todos.count
-        case .active:
-            return todos.filter { !$0.completed }.count
-        case .completed:
-            return todos.filter { $0.completed }.count
-        }
-    }
-    
-    private func addTodo() {
-        let trimmedText = newTodoText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedText.isEmpty else { return }
-        
-        let newTodo = TodoItem(text: trimmedText)
-        todos.append(newTodo)
-        newTodoText = ""
-        saveTodos()
-    }
-    
-    private func deleteTodo(_ todo: TodoItem) {
-        todos.removeAll { $0.id == todo.id }
-        saveTodos()
-    }
-    
-    private func clearCompleted() {
-        todos.removeAll { $0.completed }
-        saveTodos()
-    }
-    
-    private func saveTodos() {
-        if let encoded = try? JSONEncoder().encode(todos) {
-            UserDefaults.standard.set(encoded, forKey: "todos")
-        }
-    }
-    
-    private func loadTodos() {
-        if let data = UserDefaults.standard.data(forKey: "todos"),
-           let decoded = try? JSONDecoder().decode([TodoItem].self, from: data) {
-            todos = decoded
-        }
-    }
-}
-
-struct TodoRowView: View {
-    let todo: TodoItem
-    let onUpdate: (TodoItem) -> Void
-    let onDelete: () -> Void
-    
-    var body: some View {
-        HStack {
-            Button(action: {
-                var updatedTodo = todo
-                updatedTodo.completed.toggle()
-                onUpdate(updatedTodo)
-            }) {
-                Image(systemName: todo.completed ? "checkmark.circle.fill" : "circle")
-                    .foregroundColor(todo.completed ? .blue : .primary)
-                    .font(.title2)
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            Text(todo.text)
-                .strikethrough(todo.completed)
-                .foregroundColor(todo.completed ? .secondary : .primary)
-            
-            Spacer()
-            
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-            }
-            .buttonStyle(PlainButtonStyle())
-        }
-        .padding(.vertical, 4)
-    }
-}
 
 struct ContentView: View {
     var body: some View {
@@ -225,27 +28,49 @@ struct ContentView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     
-                    // 추가 앱들을 위한 플레이스홀더
-                    AppCardView(
-                        title: "날씨 확인",
-                        description: "현재 날씨 정보를 확인하는 앱",
-                        icon: "cloud.sun.fill",
-                        color: .blue
-                    )
+                    // 날씨 확인 앱
+                    NavigationLink(destination: WeatherView()) {
+                        AppCardView(
+                            title: "날씨 확인",
+                            description: "현재 날씨 정보를 확인하는 앱",
+                            icon: "cloud.sun.fill",
+                            color: .blue
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
-                    AppCardView(
-                        title: "메모 작성",
-                        description: "간단한 메모를 작성하고 저장하는 앱",
-                        icon: "note.text",
-                        color: .orange
-                    )
+                    // 메모 작성 앱
+                    NavigationLink(destination: NotesView()) {
+                        AppCardView(
+                            title: "메모 작성",
+                            description: "간단한 메모를 작성하고 저장하는 앱",
+                            icon: "note.text",
+                            color: .orange
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
                     
-                    AppCardView(
-                        title: "영화 정보",
-                        description: "영화 정보를 검색하고 저장하는 앱",
-                        icon: "film.fill",
-                        color: .pink
-                    )
+                    // 영화 정보 앱
+                    NavigationLink(destination: MoviesView()) {
+                        AppCardView(
+                            title: "영화 정보",
+                            description: "영화 정보를 검색하고 저장하는 앱",
+                            icon: "film.fill",
+                            color: .pink
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 캘린더 앱
+                    NavigationLink(destination: CalendarView()) {
+                        AppCardView(
+                            title: "캘린더",
+                            description: "일정을 관리하고 계획을 세우는 앱",
+                            icon: "calendar",
+                            color: .orange
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding()
             }
@@ -253,6 +78,8 @@ struct ContentView: View {
         }
     }
 }
+
+
 
 struct AppCardView: View {
     let title: String

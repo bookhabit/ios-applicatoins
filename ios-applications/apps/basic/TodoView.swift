@@ -1,5 +1,21 @@
 import SwiftUI
 
+// TodoItem 모델
+struct TodoItem: Identifiable, Codable {
+    let id: String
+    var text: String
+    var completed: Bool
+    var createdAt: Date
+    
+    init(id: String = UUID().uuidString, text: String, completed: Bool = false, createdAt: Date = Date()) {
+        self.id = id
+        self.text = text
+        self.completed = completed
+        self.createdAt = createdAt
+    }
+}
+
+// TodoView
 struct TodoView: View {
     @State private var todos: [TodoItem] = []
     @State private var newTodoText: String = ""
@@ -87,7 +103,6 @@ struct TodoView: View {
                 }
             }
             .navigationTitle("할 일 관리")
-            .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
             loadTodos()
@@ -137,7 +152,6 @@ struct TodoView: View {
     }
     
     private func saveTodos() {
-        // UserDefaults에 저장
         if let encoded = try? JSONEncoder().encode(todos) {
             UserDefaults.standard.set(encoded, forKey: "todos")
         }
@@ -151,6 +165,7 @@ struct TodoView: View {
     }
 }
 
+// TodoRowView
 struct TodoRowView: View {
     let todo: TodoItem
     let onUpdate: (TodoItem) -> Void
