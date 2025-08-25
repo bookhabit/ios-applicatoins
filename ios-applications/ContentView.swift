@@ -50,6 +50,72 @@ struct ContentView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     
+                    // 계산기 앱
+                    NavigationLink(destination: CalculatorView()) {
+                        AppCardView(
+                            title: "계산기",
+                            description: "기본적인 수학 계산을 수행하는 앱",
+                            icon: "plus.forwardslash.minus",
+                            color: .indigo
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 이벤트 테스트 앱
+                    NavigationLink(destination: EventTestView()) {
+                        AppCardView(
+                            title: "이벤트 테스트",
+                            description: "다양한 이벤트 처리를 테스트하는 앱",
+                            icon: "hand.tap.fill",
+                            color: .teal
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 그래픽 그리기 앱
+                    NavigationLink(destination: GraphicsDrawingView()) {
+                        AppCardView(
+                            title: "그래픽 그리기",
+                            description: "Canvas와 Paint로 그래픽을 그리는 앱",
+                            icon: "paintbrush.fill",
+                            color: .purple
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 이미지 표시 앱
+                    NavigationLink(destination: ImageDisplayView()) {
+                        AppCardView(
+                            title: "이미지 표시",
+                            description: "다양한 이미지 표시 방법을 테스트하는 앱",
+                            icon: "photo.fill",
+                            color: .cyan
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 대화상자 & 팝업 & 알림 앱
+                    NavigationLink(destination: DialogPopupNotificationView()) {
+                        AppCardView(
+                            title: "대화상자 & 팝업 & 알림",
+                            description: "다양한 대화상자, 팝업, 알림을 테스트하는 앱",
+                            icon: "bell.fill",
+                            color: .red
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    // 리스트 뷰 앱
+                    NavigationLink(destination: ListView()) {
+                        AppCardView(
+                            title: "리스트 뷰",
+                            description: "ListView, RecyclerView, Spinner 등 다양한 리스트 기술을 학습하는 앱",
+                            icon: "list.bullet",
+                            color: .blue
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
                     // 영화 정보 앱
                     NavigationLink(destination: MoviesView()) {
                         AppCardView(
