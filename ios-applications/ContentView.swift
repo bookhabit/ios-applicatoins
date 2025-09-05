@@ -324,6 +324,17 @@ struct ContentView: View {
                         )
                     }
                     .buttonStyle(PlainButtonStyle())
+                    
+                    // SQLite 데이터베이스 앱
+                    NavigationLink(destination: SqliteView()) {
+                        AppCardView(
+                            title: "SQLite 데이터베이스",
+                            description: "SQLite를 사용한 사용자 데이터 관리 앱",
+                            icon: "server.rack",
+                            color: .green
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 .padding()
             }
