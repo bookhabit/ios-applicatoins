@@ -10,13 +10,24 @@ import SwiftUI
 
 
 struct ContentView: View {
+    @State private var selectedTab = 0
+    
     var body: some View {
-        NavigationView {
-            ScrollView {
-                VStack(spacing: 30) {
-                    Text("앱 모음")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
+        TabView(selection: $selectedTab) {
+            // 메인 앱 목록
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 30) {
+                        // 헤더
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("앱 모음")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                            
+                            Text("다양한 기능의 앱들을 체험해보세요")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
                     
@@ -228,7 +239,7 @@ struct ContentView: View {
                                 )
                             }
                             .buttonStyle(PlainButtonStyle())
-
+                            
                             // SQLite 데이터베이스 앱
                             NavigationLink(destination: SqliteView()) {
                                 AppCardView(
@@ -460,12 +471,49 @@ struct ContentView: View {
                         }
                         .padding(.horizontal)
                     }
+                    }
+                    .padding(.vertical)
                 }
-                .padding(.vertical)
+                .navigationTitle("앱 모음")
+                .navigationBarTitleDisplayMode(.inline)
             }
-            .navigationTitle("앱 모음")
-            .navigationBarTitleDisplayMode(.inline)
+            .tabItem {
+                Image(systemName: "house.fill")
+                Text("홈")
+            }
+            .tag(0)
+            
+            // 즐겨찾기 탭
+            NavigationView {
+                FavoritesView()
+            }
+            .tabItem {
+                Image(systemName: "heart.fill")
+                Text("즐겨찾기")
+            }
+            .tag(1)
+            
+            // 카테고리 탭
+            NavigationView {
+                CategoriesView()
+            }
+            .tabItem {
+                Image(systemName: "square.grid.2x2.fill")
+                Text("카테고리")
+            }
+            .tag(2)
+            
+            // 설정 탭
+            NavigationView {
+                SettingsView()
+            }
+            .tabItem {
+                Image(systemName: "gearshape.fill")
+                Text("설정")
+            }
+            .tag(3)
         }
+        .accentColor(.blue)
     }
 }
 
@@ -502,6 +550,237 @@ struct AppCardView: View {
         .background(Color.gray.opacity(0.1))                            
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+    }
+}
+
+// MARK: - 즐겨찾기 뷰
+struct FavoritesView: View {
+    @State private var favoriteApps: [String] = ["할 일 관리", "계산기", "메모 작성"]
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Text("즐겨찾기")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
+            
+            if favoriteApps.isEmpty {
+                VStack(spacing: 16) {
+                    Image(systemName: "heart")
+                        .font(.system(size: 48))
+                        .foregroundColor(.gray)
+                    
+                    Text("즐겨찾기한 앱이 없습니다")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("앱을 즐겨찾기에 추가해보세요")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 60)
+            } else {
+                LazyVStack(spacing: 12) {
+                    ForEach(favoriteApps, id: \.self) { appName in
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.yellow)
+                            
+                            Text(appName)
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                removeFavorite(appName)
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                        .padding()
+                        .background(Color(.secondarySystemBackground))
+                        .cornerRadius(12)
+                    }
+                }
+                .padding(.horizontal)
+            }
+            
+            Spacer()
+        }
+        .navigationTitle("즐겨찾기")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func removeFavorite(_ appName: String) {
+        favoriteApps.removeAll { $0 == appName }
+    }
+}
+
+// MARK: - 카테고리 뷰
+struct CategoriesView: View {
+    let categories = [
+        ("기본 앱", "apps.iphone", Color.blue, ["할 일 관리", "계산기", "메모 작성", "날씨 확인"]),
+        ("게임", "gamecontroller.fill", Color.green, ["틱택토", "스네이크", "메모리 게임"]),
+        ("애니메이션", "sparkles", Color.purple, ["마인드 플로우", "여행의 꿈", "요리 탐험가"]),
+        ("네이티브", "iphone", Color.orange, ["미니 파일 탐색기", "보안 노트", "센서 놀이터"])
+    ]
+    
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                ForEach(categories, id: \.0) { category in
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: category.1)
+                                .foregroundColor(category.2)
+                                .font(.title2)
+                            
+                            Text(category.0)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            
+                            Spacer()
+                            
+                            Text("\(category.3.count)개")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(category.2.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: 8) {
+                            ForEach(category.3, id: \.self) { app in
+                                Text(app)
+                                    .font(.caption)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(category.2.opacity(0.1))
+                                    .cornerRadius(6)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(12)
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("카테고리")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+// MARK: - 설정 뷰
+struct SettingsView: View {
+    @State private var notificationsEnabled = true
+    @State private var darkModeEnabled = false
+    @State private var hapticFeedbackEnabled = true
+    
+    var body: some View {
+        List {
+            Section("앱 설정") {
+                HStack {
+                    Image(systemName: "bell.fill")
+                        .foregroundColor(.blue)
+                        .frame(width: 24)
+                    
+                    Text("알림")
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $notificationsEnabled)
+                }
+                
+                HStack {
+                    Image(systemName: "moon.fill")
+                        .foregroundColor(.purple)
+                        .frame(width: 24)
+                    
+                    Text("다크 모드")
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $darkModeEnabled)
+                }
+                
+                HStack {
+                    Image(systemName: "iphone.radiowaves.left.and.right")
+                        .foregroundColor(.green)
+                        .frame(width: 24)
+                    
+                    Text("햅틱 피드백")
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $hapticFeedbackEnabled)
+                }
+            }
+            
+            Section("정보") {
+                HStack {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.blue)
+                        .frame(width: 24)
+                    
+                    Text("앱 버전")
+                    
+                    Spacer()
+                    
+                    Text("1.0.0")
+                        .foregroundColor(.secondary)
+                }
+                
+                HStack {
+                    Image(systemName: "person.circle.fill")
+                        .foregroundColor(.green)
+                        .frame(width: 24)
+                    
+                    Text("개발자")
+                    
+                    Spacer()
+                    
+                    Text("비즈비")
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            Section("지원") {
+                Button(action: {
+                    // 피드백 액션
+                }) {
+                    HStack {
+                        Image(systemName: "envelope.fill")
+                            .foregroundColor(.blue)
+                            .frame(width: 24)
+                        
+                        Text("피드백 보내기")
+                    }
+                }
+                
+                Button(action: {
+                    // 도움말 액션
+                }) {
+                    HStack {
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundColor(.orange)
+                            .frame(width: 24)
+                        
+                        Text("도움말")
+                    }
+                }
+            }
+        }
+        .navigationTitle("설정")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
